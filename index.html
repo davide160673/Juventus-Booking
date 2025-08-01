@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Juventus Pre-Booking 2025/26 - Market per Partita</title>
+<style>
+  body { font-family: Arial, sans-serif; padding: 20px; background: #f4f4f4; }
+  h1 { text-align: center; margin-bottom: 30px; }
+  .match-block {
+    margin-bottom: 40px;
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    display: flex;
+    gap: 20px;
+  }
+  .seats-section {
+    flex: 1;
+  }
+  .match-title {
+    font-weight: bold;
+    margin-bottom: 10px;
+    font-size: 1.2em;
+  }
+  .market-select-container {
+    margin-bottom: 15px;
+  }
+  select.market-select {
+    font-size: 16px;
+    padding: 5px 10px;
+  }
+  .seats-label {
+    font-weight: bold;
+    margin-top: 15px;
+    margin-bottom: 6px;
+  }
+  .seats {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    max-width: 350px;
+    margin-bottom: 10px;
+  }
+  .seat {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background-color: lightgray;
+    cursor: pointer;
+    border: 2px solid #999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    user-select: none;
+  }
+  .seat.taken {
+    border-color: black;
+  }
+  .info-panel {
+    flex-basis: 350px;
+    border-left: 2px solid #ddd;
+    padding-left: 20px;
+    display: flex;
+    flex-direction: column;
+  }
+  .invitation-reason {
+    margin-bottom: 15px;
+  }
+  .invitation-reason label {
+    margin-right: 15px;
+  }
+  .market-comments {
+    flex-grow: 1;
+    overflow-y: auto;
+  }
+  .market-comment-box {
+    margin-bottom: 10px;
+  }
+  .market-comment-box label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 3px;
+  }
+  textarea.comment-box {
+    width: 100%;
+    min-height: 40px;
+    padding: 5px;
+    resize: vertical;
+  }
+  #confirm-btn {
+    display: block;
+    margin: 30px auto 0 auto;
+    padding: 12px 25px;
+    font-size: 16px;
+    background-color: #0B5394;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  #confirm-btn:disabled {
+    background-color: gray;
+    cursor: not-allowed;
+  }
+  .legend {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+    justify-content: center;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .color-box {
+    width: 15px;
+    height: 15px;
+    border-radius: 3px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Juventus Pre-Booking 2025/26</h1>
+
+<div id="matches-container"></div>
+
+<button id="confirm-btn" disabled>Confirm All Bookings</button>
+
+<div class="legend">
+  <div class="legend-item"><div class="color-box" style="background:#1f77b4;"></div> Italy</div>
+  <div class="legend-item"><div class="color-box" style="background:#ff7f0e;"></div> Iberia</div>
+  <div class="legend-item"><div class="color-box" style="background:#2ca02c;"></div> Germany</div>
+  <div class="legend-item"><div class="color-box" style="background:#d62728;"></div> Poland</div>
+  <div class="legend-item"><div class="color-box" style="background:#9467bd;"></div> Belgium</div>
+  <div class="legend-item"><div class="color-box" style="background:#8c564b;"></div> France</div>
+  <div class="legend-item"><div class="color-box" style="background:#e377c2;"></div> Export</div>
+  <div class="legend-item"><div class="color-box" style="background:#7f7f7f;"></div> Turkey and ME</div>
+  <div class="legend-item"><div class="color-box" style="background:#bcbd22;"></div> OEM Dept</div>
+</div>
+
+<script>
+  const marketsColors = {
+    "Italy": "#1f77b4",
+    "Iberia": "#ff7f0e",
+    "Germany": "#2ca02c",
+    "Poland": "#d62728",
+    "Belgium": "#9467bd",
+    "France": "#8c564b",
+    "Export": "#e377c2",
+    "Turkey and ME": "#7f7f7f",
+    "OEM Dept": "#bcbd22"
+  };
+
+  const matches = [
+    {name: "Juventus vs Parma - 24 Aug 2025"},
+    {name: "Juventus vs Inter - 13 Sep 2025"},
+    {name: "Juventus vs Atalanta - 28 Sep 2025"},
+    {name: "Juventus vs Milan - 5 Oct 2025"},
+    {name: "Juventus vs Napoli - 20 Oct 2025"},
+    {name: "Juventus vs Roma - 3 Nov 2025"},
+    {name: "Juventus vs Torino - 10 Nov 2025"},
+    {name: "Juventus vs Bologna - 24 Nov 2025"},
+    {name: "Juventus vs Lecce - 1 Dec 2025"},
+    {name: "Juventus vs Genoa - 15 Dec 2025"},
+    {name: "Juventus vs Empoli - 12 Jan 2026"},
+    {name: "Juventus vs Cagliari - 26 Jan 2026"},
+    {name: "Juventus vs Verona - 9 Feb 2026"},
+    {name: "Juventus vs Lazio - 23 Feb 2026"},
+    {name: "Juventus vs Sassuolo - 9 Mar 2026"},
+    {name: "Juventus vs Salernitana - 23 Mar 2026"},
+    {name: "Juventus vs Monza - 6 Apr 2026"},
+    {name: "Juventus vs Frosinone - 20 Apr 2026"},
+    {name: "Juventus vs Fiorentina - 4 May 2026"}
+  ];
+
+  const seatsPerType = { skybox: 10, tribuna: 6 };
+
+  const container = document.getElementById('matches-container');
+  const bookings = {}; // { matchName: { seatId: market, reason: string, comments: {market: comment} }}
+
+  function createSeat(seatId, market, matchName) {
+    const seat = document.createElement('div');
+    seat.classList.add('seat');
+    seat.title = seatId;
+    seat.innerText = seatId.match(/\d+/)[0];
+    if (market) {
+      seat.style.backgroundColor = marketsColors[market];
+      seat.classList.add('taken');
+    } else {
+      seat.style.backgroundColor = 'lightgray';
+    }
+    seat.dataset.seatId = seatId;
+    seat.dataset.matchName = matchName;
+    seat.addEventListener('click', () => toggleSeat(seat));
+    return seat;
+  }
+
+  function toggleSeat(seat) {
+    const matchName = seat.dataset.matchName;
+    const marketSelect = document.getElementById(`market-select-${matchName}`);
+    const market = marketSelect ? marketSelect.value : '';
+    
+    if (!market) {
+      alert('Please select a market first or Cancel to deselect.');
+      return;
+    }
+    const seatId = seat.dataset.seatId;
+
+    bookings[matchName] = bookings[matchName] || {comments: {}};
+
+    if (seat.classList.contains('taken')) {
+      if (bookings[matchName][seatId].market === market) {
+        seat.style.backgroundColor = 'lightgray';
+        seat.classList.remove('taken');
+        delete bookings[matchName][seatId];
+      } else {
+        alert('Seat already booked by another market');
+      }
+    } else {
+      const reasonInput = document.querySelector(`input[name="reason-${CSS.escape(matchName)}"]:checked`);
+      if (!reasonInput) {
+        alert('Please select an invitation reason');
+        return;
+      }
+      bookings[matchName][seatId] = {
+        market,
+        reason: reasonInput.value,
+        comments: bookings[matchName].comments || {}
+      };
+      seat.style.backgroundColor = marketsColors[market];
+      seat.classList.add('taken');
+    }
+    updateConfirmButton();
+  }
+
+  function renderMatch(match) {
+    const matchBlock = document.createElement('div');
+    matchBlock.classList.add('match-block');
+
+    const title = document.createElement('div');
+    title.classList.add('match-title');
+    title.innerText = match.name;
+    matchBlock.appendChild(title);
+
+    // Market select per partita
+    const marketContainer = document.createElement('div');
+    marketContainer.classList.add('market-select-container');
+    marketContainer.innerHTML = `
+      <label for="market-select-${match.name}"><strong>Select Market:</strong></label><br/>
+      <select id="market-select-${match.name}" class="market-select">
+        <option value="">--Cancel--</option>
+        <option value="Italy" style="background-color:#1f77b4; color:white;">Italy</option>
+        <option value="Iberia" style="background-color:#ff7f0e;">Iberia</option>
+        <option value="Germany" style="background-color:#2ca02c; color:white;">Germany</option>
+        <option value="Poland" style="background-color:#d62728; color:white;">Poland</option>
+        <option value="Belgium" style="background-color:#9467bd; color:white;">Belgium</option>
+        <option value="France" style="background-color:#8c564b;">France</option>
+        <option value="Export" style="background-color:#e377c2;">Export</option>
+        <option value="Turkey and ME" style="background-color:#7f7f7f; color:white;">Turkey and ME</option>
+        <option value="OEM Dept" style="background-color:#bcbd22;">OEM Dept</option>
+      </select>
+    `;
+    matchBlock.appendChild(marketContainer);
+
+    // Seats section container
+    const seatsSection = document.createElement('div');
+    seatsSection.classList.add('seats-section');
+
+    // Sky Box seats
+    const skyboxLabel = document.createElement('div');
+    skyboxLabel.classList.add('seats-label');
+    skyboxLabel.textContent = 'Sky Box';
+    seatsSection.appendChild(skyboxLabel);
+
+    const skyboxContainer = document.createElement('div');
+    skyboxContainer.classList.add('seats');
+    for (let i = 1; i <= seatsPerType.skybox; i++) {
+      const seatId = `SB${i}`;
+      const market = bookings[match.name]?.[seatId]?.market;
+      const seat = createSeat(seatId, market, match.name);
+      skyboxContainer.appendChild(seat);
+    }
+    seatsSection.appendChild(skyboxContainer);
+
+    // Tribuna Sponsor seats
+    const tribunaLabel = document.createElement('div');
+    tribunaLabel.classList.add('seats-label');
+    tribunaLabel.textContent = 'Tribuna Sponsor';
+    seatsSection.appendChild(tribunaLabel);
+
+    const tribunaContainer = document.createElement('div');
+    tribunaContainer.classList.add('seats');
+    for (let i = 1; i <= seatsPerType.tribuna; i++) {
+      const seatId = `TS${i}`;
+      const market = bookings[match.name]?.[seatId]?.market;
+      const seat = createSeat(seatId, market, match.name);
+      tribunaContainer.appendChild(seat);
+    }
+    seatsSection.appendChild(tribunaContainer);
+
+    matchBlock.appendChild(seatsSection);
+
+    // Info panel with invitation reasons and comments
+    const infoPanel = document.createElement('div');
+    infoPanel.classList.add('info-panel');
+
+    // Invitation reasons
+    const reasonDiv = document.createElement('div');
+    reasonDiv.classList.add('invitation-reason');
+    reasonDiv.innerHTML = `
+      <div><strong>Invitation Reason</strong></div>
+      <label><input type="radio" name="reason-${match.name}" value="Promotion" checked> Promotion</label>
+      <label><input type="radio" name="reason-${match.name}" value="Prospect"> Prospect</label>
+      <label><input type="radio" name="reason-${match.name}" value="Others"> Others</label>
+    `;
+    infoPanel.appendChild(reasonDiv);
+
+    // Comments by market
+    const commentsDiv = document.createElement('div');
+    commentsDiv.classList.add('market-comments');
+
+    Object.keys(marketsColors).forEach(mkt => {
+      const commentBoxDiv = document.createElement('div');
+      commentBoxDiv.classList.add('market-comment-box');
+      commentBoxDiv.innerHTML = `
+        <label for="comment-${match.name}-${mkt}">${mkt} Comment:</label>
+        <textarea id="comment-${match.name}-${mkt}" class="comment-box" rows="2"></textarea>
+      `;
+      commentsDiv.appendChild(commentBoxDiv);
+    });
+
+    infoPanel.appendChild(commentsDiv);
+
+    matchBlock.appendChild(infoPanel);
+
+    return matchBlock;
+  }
+
+  function renderAllMatches() {
+    container.innerHTML = '';
+    matches.forEach(match => {
+      container.appendChild(renderMatch(match));
+    });
+  }
+
+  function updateConfirmButton() {
+    const hasBooking = Object.values(bookings).some(matchBooking =>
+      Object.keys(matchBooking).some(key => key !== 'comments')
+    );
+    document.getElementById('confirm-btn').disabled = !hasBooking;
+  }
+
+  document.getElementById('confirm-btn').addEventListener('click', () => {
+    // Collect comments
+    for (const matchName in bookings) {
+      if (!bookings[matchName].comments) bookings[matchName].comments = {};
+      Object.keys(marketsColors).forEach(mkt => {
+        const textarea = document.getElementById(`comment-${matchName}-${mkt}`);
+        bookings[matchName].comments[mkt] = textarea ? textarea.value.trim() : '';
+      });
+    }
+
+    const results = [];
+    for (const matchName in bookings) {
+      for (const seatId in bookings[matchName]) {
+        if (seatId === 'comments') continue;
+        const { market, reason } = bookings[matchName][seatId];
+        const comment = bookings[matchName].comments[market] || '';
+        results.push(`Match: ${matchName}, Seat: ${seatId}, Market: ${market}, Reason: ${reason}, Comment: ${comment}`);
+      }
+    }
+    if (results.length === 0) {
+      alert('No bookings to confirm.');
+      return;
+    }
+    const txtContent = results.join('\\n');
+    const blob = new Blob([txtContent], { type: 'text/plain;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'juventus_bookings.txt';
+    a.click();
+    URL.revokeObjectURL(url);
+    alert('Bookings confirmed and saved locally.');
+  });
+
+  renderAllMatches();
+</script>
+
+</body>
+</html>
